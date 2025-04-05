@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Temperature Monitor</title>
+        <style>
+    /* Basic Reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* Body and Background */
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f0f8ff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+
+    /* Heading Styles */
+    h1 {
+      font-size: 2.5em;
+      color: #4a90e2;
+      margin-bottom: 20px;
+    }
+
+    /* Temperature Display */
+    .temperature {
+      font-size: 3em;
+      color: #ff6347;
+      font-weight: bold;
+      padding: 20px;
+      border-radius: 10px;
+      background-color: #fff;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s ease;
+    }
+
+    /* Change background color based on temperature */
+    .temperature.hot {
+      background-color: #ffeb3b;
+    }
+
+    .temperature.cold {
+      background-color: #add8e6;
+    }
+
+    /* Centering the content */
+    .container {
+      text-align: center;
+      background-color: #ffffff;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 500px;
+    }
+
+    /* Responsive Design for smaller screens */
+    @media screen and (max-width: 600px) {
+      h1 {
+        font-size: 2em;
+      }
+
+      .temperature {
+        font-size: 2.5em;
+      }
+    }
+
+    /* Button Styles */
+    .button {
+      margin-top: 20px;
+      background-color: #4a90e2;
+      color: white;
+      font-size: 1em;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .button:hover {
+      background-color: #357ab7;
+    }
+  </style>
+    </head>
+    <body>
+        <iframe width="450" height="260"
+            src="https://thingspeak.com/channels/2830769/charts/1?bgcolor=%23ffffff&color=%23d62020&dynamic=true"
+            frameborder="0">
+        </iframe>
+
+        <br>
+
+        <div class="container">
+            <h1>Current Temperature</h1>
+            <div class="temperature" id="temp">Loading...</div>
+            <button class="button" onclick="fetchTemperature()">Refresh</button>
+            <button class="button" onclick="goToIP()">Control</button>
+        </div>
+
+        <script>
+    const channelID = "2830769";  // Replace with your ThingSpeak Channel ID
+    const fieldNumber = 1;  // Field you want to display (Field 1 in this case)
+    const readAPIKey = "IPHTDL7J9V90NJQQ";  // Replace with your ThingSpeak Read API Key
+
+    function fetchTemperature() {
+      const url = `https://api.thingspeak.com/channels/${channelID}/fields/${fieldNumber}.json?api_key=${readAPIKey}&results=1`;
+
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          const temperature = data.feeds[0].field1;  // Get the latest temperature reading
+          document.getElementById("temp").innerText = `${temperature} °C`;
+
+          // Change background color based on temperature range
+          const tempElement = document.getElementById("temp");
+          if (temperature > 30) {
+            tempElement.classList.add("hot");
+            tempElement.classList.remove("cold");
+          } else if (temperature < 15) {
+            tempElement.classList.add("cold");
+            tempElement.classList.remove("hot");
+          } else {
+            tempElement.classList.remove("hot", "cold");
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching data:', error);
+          document.getElementById("temp").innerText = "Error loading temperature.";
+        });
+    }
+
+    function goToIP() {
+      window.location.href = "http://192.168.22.221/";
+    }
+
+    // Fetch the temperature every 10 seconds
+    setInterval(fetchTemperature, 10000);
+    fetchTemperature();  // Initial fetch when the page loads
+    </script>
+
+    </body>
+</html>
